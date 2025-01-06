@@ -78,13 +78,13 @@ volumeBar.addEventListener('input', () => {
 
         // 音量アイコンの変更
         if (audio.volume === 0) {
-            volumeIcon.src = 'images/volume-mute.png';
+            volumeIcon.src = 'images/volume-mute.PNG';
         } else if (audio.volume < 0.3) {
-            volumeIcon.src = 'images/volume-low.png';
+            volumeIcon.src = 'images/volume-low.PNG';
         } else if (audio.volume < 0.7) {
-            volumeIcon.src = 'images/volume-medium.png';
+            volumeIcon.src = 'images/volume-medium.PNG';
         } else {
-            volumeIcon.src = 'images/volume-high.png';
+            volumeIcon.src = 'images/volume-high.PNG';
         }
     }
 });
