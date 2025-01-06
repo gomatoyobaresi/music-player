@@ -1,27 +1,17 @@
-const fileInput = document.getElementById('fileInput');
 const playBtn = document.getElementById('playBtn');
 const pauseBtn = document.getElementById('pauseBtn');
 const stopBtn = document.getElementById('stopBtn');
 const loopBtn = document.getElementById('loopBtn');
+const volumeBtn = document.getElementById('volumeBtn');
+const volumeBar = document.getElementById('volumeBar');
 const canvas = document.getElementById('analyzerCanvas');
 const canvasCtx = canvas.getContext('2d');
+const currentFileName = document.getElementById('currentFileName'); // ファイル名表示用要素
 
 let audioContext, sourceNode, analyser, audio, animationId;
 let isLooping = false;
 
-// 音楽ファイル選択後、再生画面に遷移
-document.getElementById('nextBtn').addEventListener('click', () => {
-    const file = fileInput.files[0];
-    if (file) {
-        const fileURL = URL.createObjectURL(file);
-        localStorage.setItem('audioFile', fileURL); // 音楽ファイルのURLを保存
-        window.location.href = 'playback.html'; // 再生画面に遷移
-    } else {
-        alert('音楽ファイルを選択してください');
-    }
-});
-
-// 音楽再生画面で音楽ファイルを取得
+// ローカルストレージから音楽ファイルを取得
 const audioFileURL = localStorage.getItem('audioFile');
 if (audioFileURL) {
     setupAudioContext(audioFileURL);
@@ -36,6 +26,7 @@ function setupAudioContext(fileURL) {
     analyser.fftSize = 256;
     sourceNode.connect(analyser);
     analyser.connect(audioContext.destination);
+    currentFileName.innerText = `再生中: ${fileURL.split('/').pop()}`; // 再生中のファイル名を表示
 }
 
 // 再生ボタン
@@ -44,7 +35,7 @@ playBtn.addEventListener('click', () => {
         audio.play();
         visualize();
     } else {
-        alert('音楽ファイルが読み込まれていません');
+        alert('音楽ファイルを選択してください');
     }
 });
 
@@ -59,15 +50,42 @@ stopBtn.addEventListener('click', () => {
         audio.pause();
         audio.currentTime = 0;
     }
-    cancelAnimationFrame(animationId); // アニメーション停止
+    cancelAnimationFrame(animationId);
     clearCanvas();
 });
 
 // ループ再生ボタン
 loopBtn.addEventListener('click', () => {
     isLooping = !isLooping;
-    audio.loop = isLooping;
+    if (isLooping) {
+        audio.loop = true;
+    } else {
+        audio.loop = false;
+    }
 });
+
+// 音量バー
+volumeBar.addEventListener('input', () => {
+    if (audio) {
+        audio.volume = volumeBar.value / 100; // 音量を設定
+        updateVolumeIcon();
+    }
+});
+
+// 音量アイコンの更新
+function updateVolumeIcon() {
+    const volumeLevel = audio.volume;
+
+    if (volumeLevel === 0) {
+        volumeBtn.src = 'images/volume-muted.png'; // ミュートアイコン
+    } else if (volumeLevel < 0.5) {
+        volumeBtn.src = 'images/volume-low.png'; // 低音量アイコン
+    } else if (volumeLevel < 1) {
+        volumeBtn.src = 'images/volume-medium.png'; // 中音量アイコン
+    } else {
+        volumeBtn.src = 'images/volume-high.png'; // 高音量アイコン
+    }
+}
 
 // ビジュアライゼーション
 function visualize() {
@@ -76,7 +94,7 @@ function visualize() {
 
     const draw = () => {
         animationId = requestAnimationFrame(draw);
-        analyser.getByteFrequencyData(dataArray); // 周波数データを取得
+        analyser.getByteFrequencyData(dataArray);
 
         canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -98,30 +116,3 @@ function visualize() {
 function clearCanvas() {
     canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 }
-
-// 音量アイコンの変更処理
-const volumeControl = document.getElementById('volumeControl');
-const volumeIcon = document.getElementById('volumeIcon');
-
-// 音量変更時の処理
-volumeControl.addEventListener('input', function() {
-    const volume = volumeControl.value;
-    if (volume == 0) {
-        // 無音
-        volumeIcon.src = 'images/volume-mute.png';
-    } else if (volume > 0 && volume <= 0.3) {
-        // 低音
-        volumeIcon.src = 'images/volume-low.png';
-    } else if (volume > 0.3 && volume <= 0.7) {
-        // 普通の音量
-        volumeIcon.src = 'images/volume-medium.png';
-    } else {
-        // 最大音量
-        volumeIcon.src = 'images/volume-high.png';
-    }
-
-    // 音量をオーディオに反映
-    if (audio) {
-        audio.volume = volume;
-    }
-});
