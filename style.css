@@ -58,3 +58,9 @@ h1 {
 #volumeIcon {
     vertical-align: middle;
 }
+/* アイコンのサイズ調整 */
+.volume-icon {
+    width: 32px;  /* アイコンの幅 */
+    height: 32px; /* アイコンの高さ */
+    margin-right: 10px; /* 音量バーとの間隔 */
+}
