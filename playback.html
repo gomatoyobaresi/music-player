@@ -9,156 +9,20 @@
 <body>
     <div class="player-container">
         <h1>スペアナ付き音楽プレーヤー</h1>
-        <h2 id="currentTrack">再生中の曲: なし</h2> <!-- ここで再生中の曲名を表示 -->
         <canvas id="analyzerCanvas"></canvas>
         <div class="controls">
-            <button id="backBtn">戻る</button>
             <button id="playBtn">再生</button>
             <button id="pauseBtn">一時停止</button>
             <button id="stopBtn">停止</button>
             <button id="loopBtn">ループ再生</button>
         </div>
-
-        <!-- 再生バー -->
-        <div class="progress-bar">
-            <label for="progressBar">
-                <img src="play-icon.png" alt="再生バー" style="height: 20px;"> <!-- 再生アイコン -->
-            </label>
-            <input type="range" id="progressBar" value="0" step="1" min="0" max="100">
+        <div class="volume-controls">
+            <img id="volumeIcon" src="images/volume-medium.PNG" alt="Volume Icon">
+            <input type="range" id="volumeBar" min="0" max="1" step="0.01" value="0.5">
         </div>
-
-        <!-- 音量バー -->
-        <div class="volume-bar">
-            <label for="volumeBar">
-                <img src="volume-icon.png" alt="音量バー" style="height: 20px;"> <!-- 音量アイコン -->
-            </label>
-            <input type="range" id="volumeBar" value="100" step="1" min="0" max="100">
-        </div>
+        <p id="fileNameDisplay"></p>
+        <button id="backToSelection">ファイル選択画面に戻る</button>
     </div>
-
-    <script>
-        const playBtn = document.getElementById('playBtn');
-        const pauseBtn = document.getElementById('pauseBtn');
-        const stopBtn = document.getElementById('stopBtn');
-        const loopBtn = document.getElementById('loopBtn');
-        const progressBar = document.getElementById('progressBar');
-        const volumeBar = document.getElementById('volumeBar');
-        const backBtn = document.getElementById('backBtn');
-        const currentTrack = document.getElementById('currentTrack');  // 曲名表示用の要素
-        const canvas = document.getElementById('analyzerCanvas');
-        const canvasCtx = canvas.getContext('2d');
-
-        let audioContext, sourceNode, analyser, audio, animationId;
-        let isLooping = false;
-
-        // ローカルストレージから音楽ファイルを取得
-        const audioFileURL = localStorage.getItem('audioFile');
-        const audioFileName = localStorage.getItem('audioFileName'); // 音楽ファイル名も取得
-        if (audioFileURL) {
-            setupAudioContext(audioFileURL);
-            if (audioFileName) {
-                currentTrack.textContent = `再生中の曲: ${audioFileName}`;  // 曲名を表示
-            }
-        }
-
-        // オーディオコンテキストとノードのセットアップ
-        function setupAudioContext(fileURL) {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            audio = new Audio(fileURL);
-            sourceNode = audioContext.createMediaElementSource(audio);
-            analyser = audioContext.createAnalyser();
-            analyser.fftSize = 256;
-            sourceNode.connect(analyser);
-            analyser.connect(audioContext.destination);
-        }
-
-        // 再生ボタン
-        playBtn.addEventListener('click', () => {
-            if (audio) {
-                audio.play();
-                visualize();
-            } else {
-                alert('音楽ファイルが読み込まれていません');
-            }
-        });
-
-        // 一時停止ボタン
-        pauseBtn.addEventListener('click', () => {
-            if (audio) audio.pause();
-        });
-
-        // 停止ボタン
-        stopBtn.addEventListener('click', () => {
-            if (audio) {
-                audio.pause();
-                audio.currentTime = 0;
-            }
-            cancelAnimationFrame(animationId);
-            clearCanvas();
-        });
-
-        // ループ再生ボタン
-        loopBtn.addEventListener('click', () => {
-            isLooping = !isLooping;
-            if (isLooping) {
-                audio.loop = true;
-            } else {
-                audio.loop = false;
-            }
-        });
-
-        // 進行状況バー
-        audio.ontimeupdate = () => {
-            if (audio.duration) {
-                progressBar.value = (audio.currentTime / audio.duration) * 100;
-            }
-        };
-
-        progressBar.addEventListener('input', () => {
-            if (audio.duration) {
-                audio.currentTime = (progressBar.value / 100) * audio.duration;
-            }
-        });
-
-        // 音量バー
-        volumeBar.addEventListener('input', () => {
-            audio.volume = volumeBar.value / 100;
-        });
-
-        // ビジュアライゼーション
-        function visualize() {
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-
-            const draw = () => {
-                animationId = requestAnimationFrame(draw);
-                analyser.getByteFrequencyData(dataArray);
-
-                canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-
-                const barWidth = canvas.width / bufferLength;
-                let barHeight, x = 0;
-
-                for (let i = 0; i < bufferLength; i++) {
-                    barHeight = dataArray[i];
-                    canvasCtx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
-                    canvasCtx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight / 2);
-                    x += barWidth + 1;
-                }
-            };
-
-            draw();
-        }
-
-        // キャンバスをクリア
-        function clearCanvas() {
-            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-
-        // 戻るボタン
-        backBtn.addEventListener('click', () => {
-            window.location.href = 'index.html'; // 音楽ファイル選択画面に戻る
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
