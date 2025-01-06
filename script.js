@@ -2,22 +2,25 @@ const playBtn = document.getElementById('playBtn');
 const pauseBtn = document.getElementById('pauseBtn');
 const stopBtn = document.getElementById('stopBtn');
 const loopBtn = document.getElementById('loopBtn');
-const backBtn = document.getElementById('backBtn');
 const volumeBar = document.getElementById('volumeBar');
-const progressBar = document.getElementById('progressBar');
-const currentTimeDisplay = document.getElementById('currentTime');
-const durationDisplay = document.getElementById('duration');
 const volumeIcon = document.getElementById('volumeIcon');
+const backToSelection = document.getElementById('backToSelection');
+const fileNameDisplay = document.getElementById('fileNameDisplay');
+
 const canvas = document.getElementById('analyzerCanvas');
 const canvasCtx = canvas.getContext('2d');
 
 let audioContext, sourceNode, analyser, audio, animationId;
 let isLooping = false;
-let audioFileURL = localStorage.getItem('audioFile');
 
 // ローカルストレージから音楽ファイルを取得
+const audioFileURL = localStorage.getItem('audioFile');
+const audioFileName = localStorage.getItem('audioFileName'); // ファイル名
 if (audioFileURL) {
     setupAudioContext(audioFileURL);
+    fileNameDisplay.textContent = `再生中: ${audioFileName}`;
+} else {
+    fileNameDisplay.textContent = '再生中のファイルはありません';
 }
 
 // オーディオコンテキストとノードのセットアップ
@@ -62,50 +65,25 @@ loopBtn.addEventListener('click', () => {
     audio.loop = isLooping;
 });
 
-// 音量バーの更新
-volumeBar.addEventListener('input', () => {
-    const volume = volumeBar.value / 100;
+// 音量変更時のイベント
+volumeBar.addEventListener('input', (event) => {
     if (audio) {
-        audio.volume = volume;
-        updateVolumeIcon();
+        audio.volume = event.target.value;
+        updateVolumeIcon(audio.volume);
     }
 });
 
-// 音量アイコンの更新
-function updateVolumeIcon() {
-    const volumeLevel = audio.volume;
-
-    if (volumeLevel === 0) {
-        volumeIcon.src = 'images/volume-muted.PNG'; // ミュートアイコン
-    } else if (volumeLevel < 0.5) {
-        volumeIcon.src = 'images/volume-low.PNG'; // 低音量アイコン
-    } else if (volumeLevel < 1) {
-        volumeIcon.src = 'images/volume-medium.PNG'; // 中音量アイコン
+// 音量に応じてアイコンを変更
+function updateVolumeIcon(volume) {
+    if (volume === 0) {
+        volumeIcon.src = 'images/volume-mute.PNG';
+    } else if (volume < 0.3) {
+        volumeIcon.src = 'images/volume-low.PNG';
+    } else if (volume < 0.7) {
+        volumeIcon.src = 'images/volume-medium.PNG';
     } else {
-        volumeIcon.src = 'images/volume-high.PNG'; // 高音量アイコン
+        volumeIcon.src = 'images/volume-high.PNG';
     }
-}
-
-// プログレスバーの更新
-audio.addEventListener('timeupdate', () => {
-    const currentTime = audio.currentTime;
-    const duration = audio.duration;
-    currentTimeDisplay.textContent = formatTime(currentTime);
-    durationDisplay.textContent = formatTime(duration);
-    progressBar.value = (currentTime / duration) * 100;
-});
-
-// プログレスバーをクリックしたとき
-progressBar.addEventListener('input', () => {
-    const seekTime = (progressBar.value / 100) * audio.duration;
-    audio.currentTime = seekTime;
-});
-
-// 時間のフォーマット
-function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
 }
 
 // ビジュアライゼーション
@@ -138,7 +116,7 @@ function clearCanvas() {
     canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-// 戻るボタン
-backBtn.addEventListener('click', () => {
-    window.location.href = 'index.html'; // ファイル選択画面に戻る
+// ファイル選択画面に戻る
+backToSelection.addEventListener('click', () => {
+    window.location.href = 'index.html';
 });
