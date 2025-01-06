@@ -8,21 +8,21 @@
 </head>
 <body>
     <div class="player-container">
-        <h1>スペアナ付き音楽プレーヤー</h1>
+        <h1>音楽プレーヤー</h1>
+        <p id="fileName"></p> <!-- 再生中のファイル名 -->
         <canvas id="analyzerCanvas"></canvas>
         <div class="controls">
             <button id="playBtn">再生</button>
             <button id="pauseBtn">一時停止</button>
             <button id="stopBtn">停止</button>
-            <button id="loopBtn">ループ再生</button>
+            <button id="backBtn">戻る</button>
         </div>
         <div class="volume-controls">
             <img id="volumeIcon" src="images/volume-high.png" alt="音量アイコン">
             <input type="range" id="volumeBar" min="0" max="1" step="0.01">
         </div>
-        <p id="fileNameDisplay"></p>
-        <button id="backToSelection">ファイル選択画面に戻る</button>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>

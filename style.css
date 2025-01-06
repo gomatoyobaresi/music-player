@@ -1,82 +1,50 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #282828;
-    color: white;
     margin: 0;
     padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
+    background-color: #f5f5dc; /* ベージュ背景 */
 }
 
 .player-container {
     text-align: center;
-    max-width: 600px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 500px;
+}
+
+#analyzerCanvas {
     width: 100%;
+    height: 150px;
+    background: #f0f0f0;
+    margin: 20px 0;
+    border-radius: 4px;
 }
 
 .controls button {
     margin: 5px;
     padding: 10px 20px;
     font-size: 16px;
-    background-color: #1db954;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.controls button:hover {
-    background-color: #1ed760;
-}
-
-.progress-bar, .volume-bar {
-    margin-top: 20px;
-}
-
-input[type="range"] {
-    width: 80%;
-    margin: 10px 0;
-}
-
-#analyzerCanvas {
-    width: 100%;
-    height: 150px;
-    background-color: #1c1c1c;
-    margin-top: 20px;
-}
-
-h1 {
-    font-size: 24px;
-}
-#volumeControl {
-    width: 200px;
-    margin-left: 10px;
-}
-
-#volumeIcon {
-    vertical-align: middle;
-}
-/* アイコンのサイズ調整 */
-.volume-icon {
-    width: 32px;  /* アイコンの幅 */
-    height: 32px; /* アイコンの高さ */
-    margin-right: 10px; /* 音量バーとの間隔 */
 }
 
 .volume-controls {
     display: flex;
-    align-items: center; /* 縦方向の中央揃え */
-    gap: 8px; /* アイコンとバーの間のスペース */
+    align-items: center;
+    margin-top: 10px;
 }
 
-.volume-controls img {
-    height: 24px; /* アイコンの高さ */
-    width: 24px; /* アイコンの幅 */
+#volumeIcon {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
 }
 
 #volumeBar {
-    flex: 1; /* 音量バーが横幅を取るように */
-    max-width: 300px; /* 音量バーの最大幅を制限 */
+    flex-grow: 1;
 }
