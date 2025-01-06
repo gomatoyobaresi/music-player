@@ -1,108 +1,112 @@
 const playBtn = document.getElementById('playBtn');
 const pauseBtn = document.getElementById('pauseBtn');
 const stopBtn = document.getElementById('stopBtn');
-const backBtn = document.getElementById('backBtn');
 const volumeBar = document.getElementById('volumeBar');
 const volumeIcon = document.getElementById('volumeIcon');
-const fileNameDisplay = document.getElementById('fileName');
-const canvas = document.getElementById('analyzerCanvas');
-const canvasCtx = canvas.getContext('2d');
+const backBtn = document.getElementById('backBtn');
+const fileNameDisplay = document.getElementById('fileNameDisplay');
+const progressBar = document.getElementById('progressBar');
 
-let audio = new Audio();
-let audioContext, sourceNode, analyser, animationId;
+let audioContext, sourceNode, analyser, audio, animationId;
+let isPlaying = false;
 
-// ファイル名を表示
-const audioFileName = localStorage.getItem('audioFileName');
-if (audioFileName) fileNameDisplay.textContent = `再生中: ${audioFileName}`;
-
-// 音声ファイルをセットアップ
+// ローカルストレージから音楽ファイルを取得
 const audioFileURL = localStorage.getItem('audioFile');
-if (audioFileURL) {
-    audio.src = audioFileURL;
-    audio.load();
-    setupAudioContext();
+const audioFileName = localStorage.getItem('audioFileName');
+
+if (audioFileURL && audioFileName) {
+    fileNameDisplay.textContent = `再生中: ${audioFileName}`;
+    setupAudioContext(audioFileURL);
+} else {
+    alert('音楽ファイルが選択されていません');
 }
 
-// オーディオコンテキストの初期化
-function setupAudioContext() {
+// オーディオコンテキストとノードのセットアップ
+function setupAudioContext(fileURL) {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    audio = new Audio(fileURL);
     sourceNode = audioContext.createMediaElementSource(audio);
     analyser = audioContext.createAnalyser();
     analyser.fftSize = 256;
     sourceNode.connect(analyser);
     analyser.connect(audioContext.destination);
+
+    audio.addEventListener('timeupdate', updateProgressBar);
 }
 
 // 再生ボタン
 playBtn.addEventListener('click', () => {
-    audio.play();
-    visualize();
+    if (audio) {
+        audio.play();
+        isPlaying = true;
+        playBtn.disabled = true;
+        pauseBtn.disabled = false;
+    }
 });
 
 // 一時停止ボタン
 pauseBtn.addEventListener('click', () => {
-    audio.pause();
+    if (audio) {
+        audio.pause();
+        isPlaying = false;
+        playBtn.disabled = false;
+        pauseBtn.disabled = true;
+    }
 });
 
 // 停止ボタン
 stopBtn.addEventListener('click', () => {
-    audio.pause();
-    audio.currentTime = 0;
-    cancelAnimationFrame(animationId);
-    clearCanvas();
+    if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+        isPlaying = false;
+        playBtn.disabled = false;
+        pauseBtn.disabled = true;
+        clearCanvas();
+    }
 });
 
 // 戻るボタン
 backBtn.addEventListener('click', () => {
-    window.location.href = 'index.html';
+    window.location.href = 'index.html'; // ファイル選択画面へ戻る
 });
 
-// 音量バー
-volumeBar.value = 0.5; // 初期音量50%
-audio.volume = volumeBar.value;
-
+// 音量バー変更
 volumeBar.addEventListener('input', () => {
-    audio.volume = volumeBar.value;
+    if (audio) {
+        audio.volume = volumeBar.value;
 
-    // 音量アイコンの変更
-    if (audio.volume === 0) {
-        volumeIcon.src = 'images/volume-mute.png';
-    } else if (audio.volume < 0.3) {
-        volumeIcon.src = 'images/volume-low.png';
-    } else if (audio.volume < 0.7) {
-        volumeIcon.src = 'images/volume-medium.png'; // mediumを追加
-    } else {
-        volumeIcon.src = 'images/volume-high.png';
+        // 音量アイコンの変更
+        if (audio.volume === 0) {
+            volumeIcon.src = 'images/volume-mute.png';
+        } else if (audio.volume < 0.3) {
+            volumeIcon.src = 'images/volume-low.png';
+        } else if (audio.volume < 0.7) {
+            volumeIcon.src = 'images/volume-medium.png';
+        } else {
+            volumeIcon.src = 'images/volume-high.png';
+        }
     }
 });
 
+// 再生位置の更新
+progressBar.addEventListener('input', () => {
+    if (audio) {
+        audio.currentTime = (progressBar.value / 100) * audio.duration;
+    }
+});
 
-// スペクトラムのビジュアライゼーション
-function visualize() {
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-
-    const draw = () => {
-        animationId = requestAnimationFrame(draw);
-        analyser.getByteFrequencyData(dataArray);
-
-        canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-
-        const barWidth = canvas.width / bufferLength;
-        let barHeight, x = 0;
-
-        for (let i = 0; i < bufferLength; i++) {
-            barHeight = dataArray[i];
-            canvasCtx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
-            canvasCtx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight / 2);
-            x += barWidth + 1;
-        }
-    };
-
-    draw();
+// 再生中の進捗バーを更新
+function updateProgressBar() {
+    if (audio) {
+        const progress = (audio.currentTime / audio.duration) * 100;
+        progressBar.value = progress || 0; // NaN対策
+    }
 }
 
 // キャンバスをクリア
 function clearCanvas() {
+    const canvas = document.getElementById('analyzerCanvas');
+    const canvasCtx = canvas.getContext('2d');
     canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 }
