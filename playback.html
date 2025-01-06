@@ -11,13 +11,138 @@
         <h1>スペアナ付き音楽プレーヤー</h1>
         <canvas id="analyzerCanvas"></canvas>
         <div class="controls">
+            <button id="backBtn">戻る</button>
             <button id="playBtn">再生</button>
             <button id="pauseBtn">一時停止</button>
             <button id="stopBtn">停止</button>
             <button id="loopBtn">ループ再生</button>
         </div>
+        <div class="progress-bar">
+            <input type="range" id="progressBar" value="0" step="1" min="0" max="100">
+        </div>
+        <div class="volume-bar">
+            <input type="range" id="volumeBar" value="100" step="1" min="0" max="100">
+        </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        const playBtn = document.getElementById('playBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const loopBtn = document.getElementById('loopBtn');
+        const progressBar = document.getElementById('progressBar');
+        const volumeBar = document.getElementById('volumeBar');
+        const backBtn = document.getElementById('backBtn');
+        const canvas = document.getElementById('analyzerCanvas');
+        const canvasCtx = canvas.getContext('2d');
+
+        let audioContext, sourceNode, analyser, audio, animationId;
+        let isLooping = false;
+
+        // ローカルストレージから音楽ファイルを取得
+        const audioFileURL = localStorage.getItem('audioFile');
+        if (audioFileURL) {
+            setupAudioContext(audioFileURL);
+        }
+
+        // オーディオコンテキストとノードのセットアップ
+        function setupAudioContext(fileURL) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            audio = new Audio(fileURL);
+            sourceNode = audioContext.createMediaElementSource(audio);
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            sourceNode.connect(analyser);
+            analyser.connect(audioContext.destination);
+        }
+
+        // 再生ボタン
+        playBtn.addEventListener('click', () => {
+            if (audio) {
+                audio.play();
+                visualize();
+            } else {
+                alert('音楽ファイルが読み込まれていません');
+            }
+        });
+
+        // 一時停止ボタン
+        pauseBtn.addEventListener('click', () => {
+            if (audio) audio.pause();
+        });
+
+        // 停止ボタン
+        stopBtn.addEventListener('click', () => {
+            if (audio) {
+                audio.pause();
+                audio.currentTime = 0;
+            }
+            cancelAnimationFrame(animationId);
+            clearCanvas();
+        });
+
+        // ループ再生ボタン
+        loopBtn.addEventListener('click', () => {
+            isLooping = !isLooping;
+            if (isLooping) {
+                audio.loop = true;
+            } else {
+                audio.loop = false;
+            }
+        });
+
+        // 進行状況バー
+        audio.ontimeupdate = () => {
+            if (audio.duration) {
+                progressBar.value = (audio.currentTime / audio.duration) * 100;
+            }
+        };
+
+        progressBar.addEventListener('input', () => {
+            if (audio.duration) {
+                audio.currentTime = (progressBar.value / 100) * audio.duration;
+            }
+        });
+
+        // 音量バー
+        volumeBar.addEventListener('input', () => {
+            audio.volume = volumeBar.value / 100;
+        });
+
+        // ビジュアライゼーション
+        function visualize() {
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+
+            const draw = () => {
+                animationId = requestAnimationFrame(draw);
+                analyser.getByteFrequencyData(dataArray);
+
+                canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+                const barWidth = canvas.width / bufferLength;
+                let barHeight, x = 0;
+
+                for (let i = 0; i < bufferLength; i++) {
+                    barHeight = dataArray[i];
+                    canvasCtx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
+                    canvasCtx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight / 2);
+                    x += barWidth + 1;
+                }
+            };
+
+            draw();
+        }
+
+        // キャンバスをクリア
+        function clearCanvas() {
+            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // 戻るボタン
+        backBtn.addEventListener('click', () => {
+            window.location.href = 'index.html'; // 音楽ファイル選択画面に戻る
+        });
+    </script>
 </body>
 </html>
