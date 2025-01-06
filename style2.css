@@ -1,1 +1,50 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f5f5dc; /* ベージュ背景 */
+}
 
+.player-container {
+    text-align: center;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 500px;
+}
+
+#analyzerCanvas {
+    width: 100%;
+    height: 150px;
+    background: #f0f0f0;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+.controls button {
+    margin: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+}
+
+.volume-controls {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+#volumeIcon {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+}
+
+#volumeBar {
+    flex-grow: 1;
+}
