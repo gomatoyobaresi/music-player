@@ -2,10 +2,12 @@ const fileInput = document.getElementById('fileInput');
 const playBtn = document.getElementById('playBtn');
 const pauseBtn = document.getElementById('pauseBtn');
 const stopBtn = document.getElementById('stopBtn');
+const loopBtn = document.getElementById('loopBtn');
 const canvas = document.getElementById('analyzerCanvas');
 const canvasCtx = canvas.getContext('2d');
 
 let audioContext, sourceNode, analyser, audio, animationId;
+let isLooping = false;
 
 // オーディオ再生のセットアップ
 fileInput.addEventListener('change', (event) => {
@@ -37,7 +39,7 @@ playBtn.addEventListener('click', () => {
         audio.play();
         visualize();
     } else {
-        alert('音楽ファイルを選択してください！');
+        alert('音楽ファイルを選択してください');
     }
 });
 
@@ -54,6 +56,12 @@ stopBtn.addEventListener('click', () => {
     }
     cancelAnimationFrame(animationId); // アニメーション停止
     clearCanvas();
+});
+
+// ループ再生ボタン
+loopBtn.addEventListener('click', () => {
+    isLooping = !isLooping;
+    audio.loop = isLooping;
 });
 
 // ビジュアライゼーション関数
