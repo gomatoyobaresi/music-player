@@ -7,7 +7,7 @@ const backBtn = document.getElementById('backBtn');
 const fileNameDisplay = document.getElementById('fileNameDisplay');
 const progressBar = document.getElementById('progressBar');
 
-let audioContext, sourceNode, analyser, audio, animationId;
+let audioContext, sourceNode, analyser, audio;
 let isPlaying = false;
 
 // ローカルストレージから音楽ファイルを取得
@@ -62,7 +62,7 @@ stopBtn.addEventListener('click', () => {
         isPlaying = false;
         playBtn.disabled = false;
         pauseBtn.disabled = true;
-        clearCanvas();
+        progressBar.value = 0; // 再生バーをリセット
     }
 });
 
@@ -98,15 +98,8 @@ progressBar.addEventListener('input', () => {
 
 // 再生中の進捗バーを更新
 function updateProgressBar() {
-    if (audio) {
+    if (audio && audio.duration) {
         const progress = (audio.currentTime / audio.duration) * 100;
         progressBar.value = progress || 0; // NaN対策
     }
-}
-
-// キャンバスをクリア
-function clearCanvas() {
-    const canvas = document.getElementById('analyzerCanvas');
-    const canvasCtx = canvas.getContext('2d');
-    canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 }
