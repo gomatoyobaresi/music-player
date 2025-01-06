@@ -50,3 +50,11 @@ input[type="range"] {
 h1 {
     font-size: 24px;
 }
+#volumeControl {
+    width: 200px;
+    margin-left: 10px;
+}
+
+#volumeIcon {
+    vertical-align: middle;
+}
