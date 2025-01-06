@@ -1,32 +1,31 @@
 const playBtn = document.getElementById('playBtn');
 const pauseBtn = document.getElementById('pauseBtn');
 const stopBtn = document.getElementById('stopBtn');
-const loopBtn = document.getElementById('loopBtn');
+const backBtn = document.getElementById('backBtn');
 const volumeBar = document.getElementById('volumeBar');
 const volumeIcon = document.getElementById('volumeIcon');
-const backToSelection = document.getElementById('backToSelection');
-const fileNameDisplay = document.getElementById('fileNameDisplay');
-
+const fileNameDisplay = document.getElementById('fileName');
 const canvas = document.getElementById('analyzerCanvas');
 const canvasCtx = canvas.getContext('2d');
 
-let audioContext, sourceNode, analyser, audio, animationId;
-let isLooping = false;
+let audio = new Audio();
+let audioContext, sourceNode, analyser, animationId;
 
-// ローカルストレージから音楽ファイルを取得
+// ファイル名を表示
+const audioFileName = localStorage.getItem('audioFileName');
+if (audioFileName) fileNameDisplay.textContent = `再生中: ${audioFileName}`;
+
+// 音声ファイルをセットアップ
 const audioFileURL = localStorage.getItem('audioFile');
-const audioFileName = localStorage.getItem('audioFileName'); // ファイル名
 if (audioFileURL) {
-    setupAudioContext(audioFileURL);
-    fileNameDisplay.textContent = `再生中: ${audioFileName}`;
-} else {
-    fileNameDisplay.textContent = '再生中のファイルはありません';
+    audio.src = audioFileURL;
+    audio.load();
+    setupAudioContext();
 }
 
-// オーディオコンテキストとノードのセットアップ
-function setupAudioContext(fileURL) {
+// オーディオコンテキストの初期化
+function setupAudioContext() {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    audio = new Audio(fileURL);
     sourceNode = audioContext.createMediaElementSource(audio);
     analyser = audioContext.createAnalyser();
     analyser.fftSize = 256;
@@ -36,57 +35,49 @@ function setupAudioContext(fileURL) {
 
 // 再生ボタン
 playBtn.addEventListener('click', () => {
-    if (audio) {
-        audio.play();
-        visualize();
-    } else {
-        alert('音楽ファイルが読み込まれていません');
-    }
+    audio.play();
+    visualize();
 });
 
 // 一時停止ボタン
 pauseBtn.addEventListener('click', () => {
-    if (audio) audio.pause();
+    audio.pause();
 });
 
 // 停止ボタン
 stopBtn.addEventListener('click', () => {
-    if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-    }
+    audio.pause();
+    audio.currentTime = 0;
     cancelAnimationFrame(animationId);
     clearCanvas();
 });
 
-// ループ再生ボタン
-loopBtn.addEventListener('click', () => {
-    isLooping = !isLooping;
-    audio.loop = isLooping;
+// 戻るボタン
+backBtn.addEventListener('click', () => {
+    window.location.href = 'index.html';
 });
 
-// 音量変更時のイベント
-volumeBar.addEventListener('input', (event) => {
-    if (audio) {
-        audio.volume = event.target.value;
-        updateVolumeIcon(audio.volume);
-    }
-});
+// 音量バー
+volumeBar.value = 0.5; // 初期音量50%
+audio.volume = volumeBar.value;
 
-// 音量に応じてアイコンを変更
-function updateVolumeIcon(volume) {
-    if (volume === 0) {
-        volumeIcon.src = 'images/volume-mute.PNG';
-    } else if (volume < 0.3) {
-        volumeIcon.src = 'images/volume-low.PNG';
-    } else if (volume < 0.7) {
-        volumeIcon.src = 'images/volume-medium.PNG';
+volumeBar.addEventListener('input', () => {
+    audio.volume = volumeBar.value;
+
+    // 音量アイコンの変更
+    if (audio.volume === 0) {
+        volumeIcon.src = 'images/volume-mute.png';
+    } else if (audio.volume < 0.3) {
+        volumeIcon.src = 'images/volume-low.png';
+    } else if (audio.volume < 0.7) {
+        volumeIcon.src = 'images/volume-medium.png'; // mediumを追加
     } else {
-        volumeIcon.src = 'images/volume-high.PNG';
+        volumeIcon.src = 'images/volume-high.png';
     }
-}
+});
 
-// ビジュアライゼーション
+
+// スペクトラムのビジュアライゼーション
 function visualize() {
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
@@ -115,8 +106,3 @@ function visualize() {
 function clearCanvas() {
     canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 }
-
-// ファイル選択画面に戻る
-backToSelection.addEventListener('click', () => {
-    window.location.href = 'index.html';
-});
