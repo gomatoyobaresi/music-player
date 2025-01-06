@@ -13,17 +13,6 @@
         <button id="nextBtn">再生画面に進む</button>
     </div>
 
-    <script>
-        document.getElementById('nextBtn').addEventListener('click', () => {
-            const file = document.getElementById('fileInput').files[0];
-            if (file) {
-                const fileURL = URL.createObjectURL(file);
-                localStorage.setItem('audioFile', fileURL); // 音楽ファイルのURLを保存
-                window.location.href = 'playback.html'; // 再生画面へ遷移
-            } else {
-                alert('音楽ファイルを選択してください！');
-            }
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
