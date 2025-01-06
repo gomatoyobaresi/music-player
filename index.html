@@ -9,7 +9,6 @@
 <body>
     <div class="player-container">
         <h1>音楽プレーヤー</h1>
-        <!-- MP3ファイルを選択 -->
         <input type="file" id="fileInput" accept=".mp3">
         <button id="nextBtn">再生画面に進む</button>
     </div>
@@ -20,6 +19,7 @@
             if (file) {
                 const fileURL = URL.createObjectURL(file);
                 localStorage.setItem('audioFile', fileURL); // 音楽ファイルのURLを保存
+                localStorage.setItem('audioFileName', file.name); // 音楽ファイル名を保存
                 window.location.href = 'playback.html'; // 再生画面へ遷移
             } else {
                 alert('音楽ファイルを選択してください');
