@@ -67,14 +67,13 @@ h1 {
 
 .volume-controls {
     display: flex;
-    align-items: center; /* 垂直方向の中央揃え */
-    gap: 10px; /* アイコンとバーの間のスペース */
-    margin: 10px 0; /* 上下に余白 */
+    align-items: center; /* 縦方向の中央揃え */
+    gap: 8px; /* アイコンとバーの間のスペース */
 }
 
 .volume-controls img {
-    height: 32px; /* アイコンの高さを指定 */
-    width: 32px;  /* アイコンの幅を指定 */
+    height: 24px; /* アイコンの高さ */
+    width: 24px; /* アイコンの幅 */
 }
 
 #volumeBar {
