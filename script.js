@@ -9,28 +9,33 @@ const canvasCtx = canvas.getContext('2d');
 let audioContext, sourceNode, analyser, audio, animationId;
 let isLooping = false;
 
-// オーディオ再生のセットアップ
-fileInput.addEventListener('change', (event) => {
-    const file = event.target.files[0];
+// 音楽ファイル選択後、再生画面に遷移
+document.getElementById('nextBtn').addEventListener('click', () => {
+    const file = fileInput.files[0];
     if (file) {
-        if (audio) audio.pause(); // 前の音声を停止
-        audio = new Audio(URL.createObjectURL(file));
-        setupAudioContext();
+        const fileURL = URL.createObjectURL(file);
+        localStorage.setItem('audioFile', fileURL); // 音楽ファイルのURLを保存
+        window.location.href = 'playback.html'; // 再生画面に遷移
+    } else {
+        alert('音楽ファイルを選択してください');
     }
 });
 
-// オーディオコンテキストの初期化
-function setupAudioContext() {
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (!sourceNode) {
-        sourceNode = audioContext.createMediaElementSource(audio);
-        analyser = audioContext.createAnalyser();
-        analyser.fftSize = 256; // 分析の解像度
-        sourceNode.connect(analyser);
-        analyser.connect(audioContext.destination);
-    }
+// 音楽再生画面で音楽ファイルを取得
+const audioFileURL = localStorage.getItem('audioFile');
+if (audioFileURL) {
+    setupAudioContext(audioFileURL);
+}
+
+// オーディオコンテキストとノードのセットアップ
+function setupAudioContext(fileURL) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    audio = new Audio(fileURL);
+    sourceNode = audioContext.createMediaElementSource(audio);
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    sourceNode.connect(analyser);
+    analyser.connect(audioContext.destination);
 }
 
 // 再生ボタン
@@ -39,7 +44,7 @@ playBtn.addEventListener('click', () => {
         audio.play();
         visualize();
     } else {
-        alert('音楽ファイルを選択してください');
+        alert('音楽ファイルが読み込まれていません');
     }
 });
 
@@ -64,7 +69,7 @@ loopBtn.addEventListener('click', () => {
     audio.loop = isLooping;
 });
 
-// ビジュアライゼーション関数
+// ビジュアライゼーション
 function visualize() {
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
@@ -73,7 +78,6 @@ function visualize() {
         animationId = requestAnimationFrame(draw);
         analyser.getByteFrequencyData(dataArray); // 周波数データを取得
 
-        // キャンバスをクリア
         canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 
         const barWidth = canvas.width / bufferLength;
