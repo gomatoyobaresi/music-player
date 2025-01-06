@@ -98,3 +98,30 @@ function visualize() {
 function clearCanvas() {
     canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 }
+
+// 音量アイコンの変更処理
+const volumeControl = document.getElementById('volumeControl');
+const volumeIcon = document.getElementById('volumeIcon');
+
+// 音量変更時の処理
+volumeControl.addEventListener('input', function() {
+    const volume = volumeControl.value;
+    if (volume == 0) {
+        // 無音
+        volumeIcon.src = 'images/volume-mute.png';
+    } else if (volume > 0 && volume <= 0.3) {
+        // 低音
+        volumeIcon.src = 'images/volume-low.png';
+    } else if (volume > 0.3 && volume <= 0.7) {
+        // 普通の音量
+        volumeIcon.src = 'images/volume-medium.png';
+    } else {
+        // 最大音量
+        volumeIcon.src = 'images/volume-high.png';
+    }
+
+    // 音量をオーディオに反映
+    if (audio) {
+        audio.volume = volume;
+    }
+});
