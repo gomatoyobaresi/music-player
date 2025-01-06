@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音楽ファイル選択</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="player-container">
+        <h1>音楽プレーヤー</h1>
+        <input type="file" id="fileInput" accept="audio/*">
+        <button id="nextBtn">再生画面に進む</button>
+    </div>
+
+    <script>
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            const file = document.getElementById('fileInput').files[0];
+            if (file) {
+                const fileURL = URL.createObjectURL(file);
+                localStorage.setItem('audioFile', fileURL); // 音楽ファイルのURLを保存
+                window.location.href = 'playback.html'; // 再生画面へ遷移
+            } else {
+                alert('音楽ファイルを選択してください！');
+            }
+        });
+    </script>
+</body>
+</html>
