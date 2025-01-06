@@ -9,6 +9,7 @@
 <body>
     <div class="player-container">
         <h1>スペアナ付き音楽プレーヤー</h1>
+        <h2 id="currentTrack">再生中の曲: なし</h2> <!-- ここで再生中の曲名を表示 -->
         <canvas id="analyzerCanvas"></canvas>
         <div class="controls">
             <button id="backBtn">戻る</button>
@@ -17,10 +18,20 @@
             <button id="stopBtn">停止</button>
             <button id="loopBtn">ループ再生</button>
         </div>
+
+        <!-- 再生バー -->
         <div class="progress-bar">
+            <label for="progressBar">
+                <img src="play-icon.png" alt="再生バー" style="height: 20px;"> <!-- 再生アイコン -->
+            </label>
             <input type="range" id="progressBar" value="0" step="1" min="0" max="100">
         </div>
+
+        <!-- 音量バー -->
         <div class="volume-bar">
+            <label for="volumeBar">
+                <img src="volume-icon.png" alt="音量バー" style="height: 20px;"> <!-- 音量アイコン -->
+            </label>
             <input type="range" id="volumeBar" value="100" step="1" min="0" max="100">
         </div>
     </div>
@@ -33,6 +44,7 @@
         const progressBar = document.getElementById('progressBar');
         const volumeBar = document.getElementById('volumeBar');
         const backBtn = document.getElementById('backBtn');
+        const currentTrack = document.getElementById('currentTrack');  // 曲名表示用の要素
         const canvas = document.getElementById('analyzerCanvas');
         const canvasCtx = canvas.getContext('2d');
 
@@ -41,8 +53,12 @@
 
         // ローカルストレージから音楽ファイルを取得
         const audioFileURL = localStorage.getItem('audioFile');
+        const audioFileName = localStorage.getItem('audioFileName'); // 音楽ファイル名も取得
         if (audioFileURL) {
             setupAudioContext(audioFileURL);
+            if (audioFileName) {
+                currentTrack.textContent = `再生中の曲: ${audioFileName}`;  // 曲名を表示
+            }
         }
 
         // オーディオコンテキストとノードのセットアップ
