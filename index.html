@@ -9,10 +9,22 @@
 <body>
     <div class="player-container">
         <h1>音楽プレーヤー</h1>
-        <input type="file" id="fileInput" accept="audio/*">
+        <!-- MP3ファイルを選択 -->
+        <input type="file" id="fileInput" accept=".mp3">
         <button id="nextBtn">再生画面に進む</button>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            const file = document.getElementById('fileInput').files[0];
+            if (file) {
+                const fileURL = URL.createObjectURL(file);
+                localStorage.setItem('audioFile', fileURL); // 音楽ファイルのURLを保存
+                window.location.href = 'playback.html'; // 再生画面へ遷移
+            } else {
+                alert('音楽ファイルを選択してください');
+            }
+        });
+    </script>
 </body>
 </html>
