@@ -1,3 +1,4 @@
+/* body の基本設定 */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -6,10 +7,11 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f5f5dc; /* ベージュ背景 */
+    background-color: #f5f5dc;
 }
 
-.player-container {
+/* コンテナの共通スタイル */
+.container, #audioPlayer {
     text-align: center;
     background: #fff;
     padding: 20px;
@@ -19,32 +21,46 @@ body {
     max-width: 500px;
 }
 
+/* ボタンのスタイル */
+button {
+    padding: 10px 20px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: #7cb9e8;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:disabled {
+    background-color: #d3d3d3;
+    cursor: not-allowed;
+}
+
+/* プログレスバーとボリュームバー */
+input[type="range"] {
+    width: 100%;
+    margin: 10px 0;
+}
+
+/* 音量アイコン */
+#volumeIcon {
+    vertical-align: middle;
+    margin-right: 10px;
+}
+
+/* ファイル名表示 */
+#fileNameDisplay {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+/* スペクトラムアナライザーキャンバス */
 #analyzerCanvas {
     width: 100%;
     height: 150px;
     background: #f0f0f0;
     margin: 20px 0;
     border-radius: 4px;
-}
-
-.controls button {
-    margin: 5px;
-    padding: 10px 20px;
-    font-size: 16px;
-}
-
-.volume-controls {
-    display: flex;
-    align-items: center;
-    margin-top: 10px;
-}
-
-#volumeIcon {
-    width: 32px;
-    height: 32px;
-    margin-right: 10px;
-}
-
-#volumeBar {
-    flex-grow: 1;
 }
