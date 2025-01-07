@@ -78,7 +78,7 @@
         #volumeIcon {
             width: 24px;
             height: 24px;
-            margin-right: 10px; /* アイコンとバーの間隔 */
+            margin-right: 10px;
             cursor: pointer;
         }
     </style>
@@ -101,7 +101,7 @@
             <button id="stopBtn">停止</button>
         </div>
         <div id="volumeContainer">
-            <img id="volumeIcon" src="images/volume-medium.PNG" alt="音量" />
+            <img id="volumeIcon" src="images/volume-medium.png" alt="音量" />
             <input type="range" id="volumeBar" min="0" max="1" step="0.01" value="0.5" />
         </div>
     </div>
@@ -117,8 +117,10 @@
         const progressBar = document.getElementById('progressBar');
         const currentTimeDisplay = document.getElementById('currentTime');
         const durationDisplay = document.getElementById('duration');
+        const analyzerCanvas = document.getElementById('analyzerCanvas');
+        const canvasCtx = analyzerCanvas.getContext('2d');
 
-        let audio;
+        let audio, audioContext, analyser, dataArray, bufferLength;
         const audioFileURL = localStorage.getItem('audioFile');
         const audioFileName = localStorage.getItem('audioFileName');
 
@@ -131,6 +133,18 @@
 
         function setupAudio(fileURL) {
             audio = new Audio(fileURL);
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const source = audioContext.createMediaElementSource(audio);
+
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+
+            drawSpectrum();
 
             audio.addEventListener('timeupdate', updateProgress);
             audio.addEventListener('loadedmetadata', () => {
@@ -138,6 +152,7 @@
             });
 
             playBtn.addEventListener('click', () => {
+                audioContext.resume();
                 audio.play();
                 playBtn.disabled = true;
                 pauseBtn.disabled = false;
@@ -182,13 +197,34 @@
         function updateVolumeIcon() {
             const volume = volumeBar.value;
             if (volume == 0) {
-                volumeIcon.src = 'images/volume-mute.PNG';
+                volumeIcon.src = 'images/volume-mute.png';
             } else if (volume <= 0.3) {
-                volumeIcon.src = 'images/volume-low.PNG';
+                volumeIcon.src = 'images/volume-low.png';
             } else if (volume <= 0.7) {
-                volumeIcon.src = 'images/volume-medium.PNG';
+                volumeIcon.src = 'images/volume-medium.png';
             } else {
-                volumeIcon.src = 'images/volume-high.PNG';
+                volumeIcon.src = 'images/volume-high.png';
+            }
+        }
+
+        function drawSpectrum() {
+            requestAnimationFrame(drawSpectrum);
+
+            analyser.getByteFrequencyData(dataArray);
+
+            canvasCtx.fillStyle = '#f0f0f0';
+            canvasCtx.fillRect(0, 0, analyzerCanvas.width, analyzerCanvas.height);
+
+            const barWidth = (analyzerCanvas.width / bufferLength) * 1.5;
+            let barHeight, x = 0;
+
+            for (let i = 0; i < bufferLength; i++) {
+                barHeight = dataArray[i];
+
+                canvasCtx.fillStyle = `rgb(${barHeight + 100},50,50)`;
+                canvasCtx.fillRect(x, analyzerCanvas.height - barHeight / 2, barWidth, barHeight / 2);
+
+                x += barWidth + 1;
             }
         }
 
