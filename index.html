@@ -3,27 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>音楽ファイル選択</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>音楽プレーヤー - ファイル選択</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="player-container">
+    <div class="container">
         <h1>音楽プレーヤー</h1>
         <input type="file" id="fileInput" accept="audio/mp3">
-        <button id="nextBtn">再生画面に進む</button>
+        <button id="nextBtn" disabled>再生画面へ進む</button>
     </div>
-
     <script>
-        document.getElementById('nextBtn').addEventListener('click', () => {
-            const file = document.getElementById('fileInput').files[0];
+        const fileInput = document.getElementById('fileInput');
+        const nextBtn = document.getElementById('nextBtn');
+
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
             if (file) {
                 const fileURL = URL.createObjectURL(file);
                 localStorage.setItem('audioFile', fileURL);
-                localStorage.setItem('audioFileName', file.name); // ファイル名を保存
-                window.location.href = 'playback.html';
-            } else {
-                alert('音楽ファイルを選択してください');
+                localStorage.setItem('audioFileName', file.name);
+                nextBtn.disabled = false;
             }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            window.location.href = 'playback.html';
         });
     </script>
 </body>
