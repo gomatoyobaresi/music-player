@@ -47,11 +47,6 @@
             margin: 10px 0;
         }
 
-        #volumeIcon {
-            vertical-align: middle;
-            margin-right: 10px;
-        }
-
         #fileNameDisplay {
             font-size: 18px;
             margin: 10px 0;
@@ -64,6 +59,28 @@
             margin: 20px 0;
             border-radius: 4px;
         }
+
+        #timeDisplay {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #666;
+            margin-top: -10px;
+        }
+
+        #volumeContainer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        #volumeIcon {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px; /* アイコンとバーの間隔 */
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -72,13 +89,19 @@
         <canvas id="analyzerCanvas"></canvas>
         <p id="fileNameDisplay">再生中: 未選択</p>
         <div>
+            <input type="range" id="progressBar" min="0" max="100" value="0" />
+            <div id="timeDisplay">
+                <span id="currentTime">00:00</span>
+                <span id="duration">00:00</span>
+            </div>
+        </div>
+        <div>
             <button id="playBtn">再生</button>
             <button id="pauseBtn" disabled>一時停止</button>
             <button id="stopBtn">停止</button>
         </div>
-        <input type="range" id="progressBar" min="0" max="100" value="0" />
-        <div>
-            <img id="volumeIcon" src="images/volume-medium.PNG" alt="音量" style="width: 24px; height: 24px;">
+        <div id="volumeContainer">
+            <img id="volumeIcon" src="images/volume-medium.PNG" alt="音量" />
             <input type="range" id="volumeBar" min="0" max="1" step="0.01" value="0.5" />
         </div>
     </div>
@@ -92,142 +115,86 @@
         const backBtn = document.getElementById('backBtn');
         const fileNameDisplay = document.getElementById('fileNameDisplay');
         const progressBar = document.getElementById('progressBar');
-        const analyzerCanvas = document.getElementById('analyzerCanvas');
-        const canvasCtx = analyzerCanvas.getContext('2d');
+        const currentTimeDisplay = document.getElementById('currentTime');
+        const durationDisplay = document.getElementById('duration');
 
-        let audioContext, sourceNode, analyser, audio;
-        let isPlaying = false;
-
-        // ローカルストレージから音楽ファイルを取得
+        let audio;
         const audioFileURL = localStorage.getItem('audioFile');
         const audioFileName = localStorage.getItem('audioFileName');
 
         if (audioFileURL && audioFileName) {
             fileNameDisplay.textContent = `再生中: ${audioFileName}`;
-            setupAudioContext(audioFileURL);
+            setupAudio(audioFileURL);
         } else {
             alert('音楽ファイルが選択されていません');
         }
 
-        // オーディオコンテキストとスペアナのセットアップ
-        function setupAudioContext(fileURL) {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        function setupAudio(fileURL) {
             audio = new Audio(fileURL);
-            sourceNode = audioContext.createMediaElementSource(audio);
-            analyser = audioContext.createAnalyser();
-            analyser.fftSize = 256;
-            sourceNode.connect(analyser);
-            analyser.connect(audioContext.destination);
 
-            audio.addEventListener('timeupdate', updateProgressBar);
-            drawVisualizer();
-        }
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('loadedmetadata', () => {
+                durationDisplay.textContent = formatTime(audio.duration);
+            });
 
-        // 再生ボタン
-        playBtn.addEventListener('click', () => {
-            if (audio) {
+            playBtn.addEventListener('click', () => {
                 audio.play();
-                isPlaying = true;
                 playBtn.disabled = true;
                 pauseBtn.disabled = false;
-                audioContext.resume(); // AudioContextを再開
-            }
-        });
+            });
 
-        // 一時停止ボタン
-        pauseBtn.addEventListener('click', () => {
-            if (audio) {
+            pauseBtn.addEventListener('click', () => {
                 audio.pause();
-                isPlaying = false;
                 playBtn.disabled = false;
                 pauseBtn.disabled = true;
-            }
-        });
+            });
 
-        // 停止ボタン
-        stopBtn.addEventListener('click', () => {
-            if (audio) {
+            stopBtn.addEventListener('click', () => {
                 audio.pause();
                 audio.currentTime = 0;
-                isPlaying = false;
                 playBtn.disabled = false;
                 pauseBtn.disabled = true;
-                progressBar.value = 0; // 再生バーをリセット
-            }
-        });
+                progressBar.value = 0;
+                currentTimeDisplay.textContent = '00:00';
+            });
 
-        // 戻るボタン
-        backBtn.addEventListener('click', () => {
-            window.location.href = 'index.html'; // ファイル選択画面へ戻る
-        });
-
-        // 音量バー変更
-        volumeBar.addEventListener('input', () => {
-            if (audio) {
-                audio.volume = volumeBar.value;
-
-                // 音量アイコンの変更
-                if (audio.volume === 0) {
-                    volumeIcon.src = 'images/volume-mute.PNG';
-                } else if (audio.volume < 0.3) {
-                    volumeIcon.src = 'images/volume-low.PNG';
-                } else if (audio.volume < 0.7) {
-                    volumeIcon.src = 'images/volume-medium.PNG';
-                } else {
-                    volumeIcon.src = 'images/volume-high.PNG';
-                }
-            }
-        });
-
-        // 再生位置の更新
-        progressBar.addEventListener('input', () => {
-            if (audio) {
+            progressBar.addEventListener('input', () => {
                 audio.currentTime = (progressBar.value / 100) * audio.duration;
+            });
+
+            volumeBar.addEventListener('input', () => {
+                audio.volume = volumeBar.value;
+                updateVolumeIcon();
+            });
+        }
+
+        function updateProgress() {
+            progressBar.value = (audio.currentTime / audio.duration) * 100;
+            currentTimeDisplay.textContent = formatTime(audio.currentTime);
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateVolumeIcon() {
+            const volume = volumeBar.value;
+            if (volume == 0) {
+                volumeIcon.src = 'images/volume-mute.PNG';
+            } else if (volume <= 0.3) {
+                volumeIcon.src = 'images/volume-low.PNG';
+            } else if (volume <= 0.7) {
+                volumeIcon.src = 'images/volume-medium.PNG';
+            } else {
+                volumeIcon.src = 'images/volume-high.PNG';
             }
+        }
+
+        backBtn.addEventListener('click', () => {
+            window.location.href = 'index.html';
         });
-
-        // 再生中の進捗バーを更新
-        function updateProgressBar() {
-            if (audio && audio.duration) {
-                const progress = (audio.currentTime / audio.duration) * 100;
-                progressBar.value = progress || 0; // NaN対策
-            }
-        }
-
-        // スペアナの描画
-        function drawVisualizer() {
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-
-            function draw() {
-                if (!isPlaying) {
-                    requestAnimationFrame(draw);
-                    return;
-                }
-
-                analyser.getByteFrequencyData(dataArray);
-
-                canvasCtx.fillStyle = '#f0f0f0';
-                canvasCtx.fillRect(0, 0, analyzerCanvas.width, analyzerCanvas.height);
-
-                const barWidth = (analyzerCanvas.width / bufferLength) * 2.5;
-                let barHeight;
-                let x = 0;
-
-                for (let i = 0; i < bufferLength; i++) {
-                    barHeight = dataArray[i] / 2;
-
-                    canvasCtx.fillStyle = `rgb(${barHeight + 100}, 50, 150)`;
-                    canvasCtx.fillRect(x, analyzerCanvas.height - barHeight, barWidth, barHeight);
-
-                    x += barWidth + 1;
-                }
-
-                requestAnimationFrame(draw);
-            }
-
-            draw();
-        }
     </script>
 </body>
 </html>
