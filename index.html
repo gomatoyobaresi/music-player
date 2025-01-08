@@ -3,31 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>音楽プレーヤー - ファイル選択</title>
+    <title>音楽プレイヤー</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>音楽プレーヤー</h1>
-        <input type="file" id="fileInput" accept="audio/mp3">
-        <button id="nextBtn" disabled>再生画面へ進む</button>
+        <h1>音楽プレイヤー</h1>
+        <input type="file" id="audioFiles" multiple accept="audio/mp3">
+        <ul id="fileList"></ul>
+        <button id="startPlayback">再生画面へ</button>
     </div>
-    <script>
-        const fileInput = document.getElementById('fileInput');
-        const nextBtn = document.getElementById('nextBtn');
 
-        fileInput.addEventListener('change', () => {
-            const file = fileInput.files[0];
-            if (file) {
-                const fileURL = URL.createObjectURL(file);
-                localStorage.setItem('audioFile', fileURL);
-                localStorage.setItem('audioFileName', file.name);
-                nextBtn.disabled = false;
-            }
+    <script>
+        const audioFilesInput = document.getElementById('audioFiles');
+        const fileList = document.getElementById('fileList');
+        const startPlaybackBtn = document.getElementById('startPlayback');
+        let audioFiles = [];
+
+        // 音楽ファイル選択時にファイルリストを更新
+        audioFilesInput.addEventListener('change', () => {
+            audioFiles = Array.from(audioFilesInput.files);
+            updateFileList();
         });
 
-        nextBtn.addEventListener('click', () => {
-            window.location.href = 'playback.html';
+        // ファイルリストを表示
+        function updateFileList() {
+            fileList.innerHTML = ''; // 既存のリストをリセット
+            audioFiles.forEach(file => {
+                const li = document.createElement('li');
+                li.textContent = file.name;
+                fileList.appendChild(li);
+            });
+        }
+
+        // 再生画面への遷移
+        startPlaybackBtn.addEventListener('click', () => {
+            if (audioFiles.length > 0) {
+                // ファイルのURLを生成してlocalStorageに保存
+                const fileURLs = audioFiles.map(file => URL.createObjectURL(file));
+                localStorage.setItem('audioFiles', JSON.stringify(fileURLs)); // 音楽ファイルのURLをローカルストレージに保存
+                localStorage.setItem('audioFileNames', JSON.stringify(audioFiles.map(file => file.name))); // 音楽ファイルの名前を保存
+                window.location.href = 'playback.html'; // playback.html へ遷移
+            } else {
+                alert('音楽ファイルを選択してください');
+            }
         });
     </script>
 </body>
