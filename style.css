@@ -21,6 +21,36 @@ body {
     max-width: 500px;
 }
 
+/* ファイルリストと再生リスト */
+#fileList, #playList {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+#fileList li, #playList li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+    padding: 5px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+#fileList button, #playList button {
+    padding: 5px 10px;
+    background-color: #7cb9e8;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+#playList button {
+    background-color: #f44336; /* 赤色で削除ボタン */
+}
+
 /* ボタンのスタイル */
 button {
     padding: 10px 20px;
