@@ -6,25 +6,64 @@ const volumeIcon = document.getElementById('volumeIcon');
 const backBtn = document.getElementById('backBtn');
 const fileNameDisplay = document.getElementById('fileNameDisplay');
 const progressBar = document.getElementById('progressBar');
+const fileList = document.getElementById('fileList'); // ファイルリストの要素
+const playList = document.getElementById('playList'); // 再生リストの要素
 
 let audioContext, sourceNode, analyser, audio;
 let isPlaying = false;
+let audioFiles = JSON.parse(localStorage.getItem('audioFiles')) || []; // ローカルストレージから音楽ファイルリストを取得
+let currentTrackIndex = 0; // 再生中のトラックインデックス
+
+// ファイルリストと再生リストを更新
+function updateFileList() {
+    fileList.innerHTML = ''; // ファイルリストをリセット
+    audioFiles.forEach((file, index) => {
+        const listItem = document.createElement('li');
+        listItem.textContent = file.name;
+
+        const addToPlayListBtn = document.createElement('button');
+        addToPlayListBtn.textContent = '再生リストに追加';
+        addToPlayListBtn.addEventListener('click', () => addToPlayList(index));
+
+        listItem.appendChild(addToPlayListBtn);
+        fileList.appendChild(listItem);
+    });
+}
+
+// 再生リストに追加
+function addToPlayList(index) {
+    const track = audioFiles[index];
+    const listItem = document.createElement('li');
+    listItem.textContent = track.name;
+
+    const removeFromPlayListBtn = document.createElement('button');
+    removeFromPlayListBtn.textContent = '削除';
+    removeFromPlayListBtn.addEventListener('click', () => removeFromPlayList(listItem, track));
+
+    listItem.appendChild(removeFromPlayListBtn);
+    playList.appendChild(listItem);
+}
+
+// 再生リストから削除
+function removeFromPlayList(listItem, track) {
+    playList.removeChild(listItem);
+    audioFiles = audioFiles.filter((file) => file !== track);
+    localStorage.setItem('audioFiles', JSON.stringify(audioFiles));
+}
 
 // ローカルストレージから音楽ファイルを取得
-const audioFileURL = localStorage.getItem('audioFile');
-const audioFileName = localStorage.getItem('audioFileName');
-
-if (audioFileURL && audioFileName) {
-    fileNameDisplay.textContent = `再生中: ${audioFileName}`;
-    setupAudioContext(audioFileURL);
+if (audioFiles.length > 0) {
+    updateFileList(); // 音楽ファイルリストを表示
+    fileNameDisplay.textContent = `再生中: ${audioFiles[currentTrackIndex].name}`;
+    setupAudioContext(audioFiles[currentTrackIndex]);
 } else {
     alert('音楽ファイルが選択されていません');
 }
 
 // オーディオコンテキストとノードのセットアップ
-function setupAudioContext(fileURL) {
+function setupAudioContext(track) {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    audio = new Audio(fileURL);
+    audio = new Audio(URL.createObjectURL(track)); // ここを確認
     sourceNode = audioContext.createMediaElementSource(audio);
     analyser = audioContext.createAnalyser();
     analyser.fftSize = 256;
@@ -101,5 +140,24 @@ function updateProgressBar() {
     if (audio && audio.duration) {
         const progress = (audio.currentTime / audio.duration) * 100;
         progressBar.value = progress || 0; // NaN対策
+    }
+
+    if (audio.ended) {
+        // 再生した曲をリストから削除
+        playList.removeChild(playList.children[0]);
+        audioFiles = audioFiles.filter((file, index) => index !== currentTrackIndex); // 曲の削除
+        localStorage.setItem('audioFiles', JSON.stringify(audioFiles));
+
+        // 次の曲を再生
+        if (audioFiles.length > 0 && currentTrackIndex < audioFiles.length) {
+            currentTrackIndex++;
+            audio = new Audio(URL.createObjectURL(audioFiles[currentTrackIndex]));
+            setupAudioContext(audioFiles[currentTrackIndex]);
+            playBtn.disabled = false;
+            pauseBtn.disabled = true;
+            audio.play();
+        } else {
+            alert('再生リストが終了しました');
+        }
     }
 }
