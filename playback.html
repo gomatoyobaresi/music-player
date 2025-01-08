@@ -7,23 +7,96 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
             background-color: #f9f7f2;
             margin: 0;
-            padding: 0;
             display: flex;
-            justify-content: center;
-            align-items: center;
             height: 100vh;
         }
 
-        #audioPlayer {
-            width: 90%;
-            max-width: 400px;
+        #mainContainer {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        #playerContainer {
+            flex: 2;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             background-color: #fff;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+            border-right: 1px solid #ddd;
+        }
+
+        #playlistContainer {
+            flex: 1;
+            padding: 20px;
+            background-color: #f4f4f4;
+            overflow-y: auto;
+        }
+
+        #playlistContainer h2 {
+            margin-top: 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        #playlist {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #playlist li {
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #playlist li:hover {
+            background-color: #e6f7ff;
+        }
+
+        #playlist li.playing {
+            background-color: #80e0ff; /* 再生中の項目のハイライト */
+            font-weight: bold;
+        }
+
+        .remove-btn {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .remove-btn:hover {
+            background-color: #ff1a1a;
+        }
+
+        #fileNameDisplay {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 150px;
+            background: #f0f0f0;
+            margin: 20px 0;
+            border-radius: 12px;
+            border: 1px solid #ddd;
         }
 
         button {
@@ -47,62 +120,62 @@
             margin: 10px 0;
         }
 
-        #fileNameDisplay {
-            font-size: 18px;
-            margin: 10px 0;
+        #fileList {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 20px;
         }
 
-        #analyzerCanvas {
-            width: 100%;
-            height: 150px;
-            background: #f0f0f0;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-
-        #timeDisplay {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            color: #666;
-            margin-top: -10px;
-        }
-
-        #volumeContainer {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 10px;
-        }
-
-        #volumeIcon {
-            width: 24px;
-            height: 24px;
-            margin-right: 10px;
+        #fileList li {
+            padding: 8px;
+            margin: 5px 0;
+            background-color: #fff;
+            border-radius: 5px;
             cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s ease;
+        }
+
+        #fileList li:hover {
+            background-color: #f0f8ff;
         }
     </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 </head>
 <body>
-    <div id="audioPlayer">
-        <button id="backBtn">戻る</button>
-        <canvas id="analyzerCanvas"></canvas>
-        <p id="fileNameDisplay">再生中: 未選択</p>
-        <div>
-            <input type="range" id="progressBar" min="0" max="100" value="0" />
-            <div id="timeDisplay">
-                <span id="currentTime">00:00</span>
-                <span id="duration">00:00</span>
+    <div id="mainContainer">
+        <div id="playerContainer">
+            <p id="fileNameDisplay">再生中: 未選択</p>
+            <canvas id="analyzerCanvas"></canvas>
+            <div>
+                <input type="range" id="progressBar" min="0" max="100" value="0" />
+                <div id="timeDisplay" style="display: flex; justify-content: space-between; font-size: 14px;">
+                    <span id="currentTime">00:00</span>
+                    <span id="duration">00:00</span>
+                </div>
+            </div>
+            <div>
+                <button id="playBtn">再生</button>
+                <button id="pauseBtn" disabled>一時停止</button>
+                <button id="stopBtn">停止</button>
+            </div>
+            <div style="margin-top: 10px;">
+                <label for="volumeBar">音量:</label>
+                <input type="range" id="volumeBar" min="0" max="1" step="0.01" value="0.5" />
             </div>
         </div>
-        <div>
-            <button id="playBtn">再生</button>
-            <button id="pauseBtn" disabled>一時停止</button>
-            <button id="stopBtn">停止</button>
-        </div>
-        <div id="volumeContainer">
-            <img id="volumeIcon" src="images/volume-medium.PNG" alt="音量" />
-            <input type="range" id="volumeBar" min="0" max="1" step="0.01" value="0.5" />
+
+        <div id="playlistContainer">
+            <h2>再生リスト</h2>
+            <ul id="playlist">
+                <!-- 再生リストがここに追加されます -->
+            </ul>
+
+            <h3>ファイルリスト</h3>
+            <ul id="fileList">
+                <!-- ここにファイルリストを追加 -->
+            </ul>
         </div>
     </div>
 
@@ -111,28 +184,83 @@
         const pauseBtn = document.getElementById('pauseBtn');
         const stopBtn = document.getElementById('stopBtn');
         const volumeBar = document.getElementById('volumeBar');
-        const volumeIcon = document.getElementById('volumeIcon');
-        const backBtn = document.getElementById('backBtn');
-        const fileNameDisplay = document.getElementById('fileNameDisplay');
         const progressBar = document.getElementById('progressBar');
         const currentTimeDisplay = document.getElementById('currentTime');
         const durationDisplay = document.getElementById('duration');
         const analyzerCanvas = document.getElementById('analyzerCanvas');
         const canvasCtx = analyzerCanvas.getContext('2d');
+        const playlist = document.getElementById('playlist');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const fileList = document.getElementById('fileList');
 
-        let audio, audioContext, analyser, dataArray, bufferLength;
-        const audioFileURL = localStorage.getItem('audioFile');
-        const audioFileName = localStorage.getItem('audioFileName');
+        let audio = new Audio();
+        let audioContext, analyser, dataArray, bufferLength;
+        let playlistArray = []; // 再生リストに追加する曲を管理する配列
+        let isPlaying = false; // 再生中かどうか
 
-        if (audioFileURL && audioFileName) {
-            fileNameDisplay.textContent = `再生中: ${audioFileName}`;
-            setupAudio(audioFileURL);
-        } else {
-            alert('音楽ファイルが選択されていません');
+        // localStorageから音楽ファイル情報を取得
+        const savedFiles = JSON.parse(localStorage.getItem('musicFiles')) || [];
+
+        // 音楽ファイルリストを表示
+        savedFiles.forEach((file, index) => {
+            const li = document.createElement('li');
+            li.textContent = `ファイル ${index + 1}: ${file.name}`;
+            li.dataset.src = file.url;
+            fileList.appendChild(li);
+        });
+
+        // 音楽ファイルを再生リストに追加する
+        fileList.addEventListener('click', (event) => {
+            if (event.target.tagName === 'LI') {
+                const src = event.target.getAttribute('data-src');
+                const name = event.target.textContent;
+
+                // 再生リストに8曲以上のファイルがないかチェック
+                if (playlistArray.length < 8) {
+                    // 曲を追加（重複を気にせず追加）
+                    playlistArray.push({ name, url: src });
+                    updatePlaylist();
+                } else {
+                    alert('再生リストに追加できるのは8曲までです。');
+                }
+            }
+        });
+
+        // 再生リストの更新
+        function updatePlaylist() {
+            playlist.innerHTML = ''; // 現在の再生リストをクリア
+            playlistArray.forEach((file, index) => {
+                const li = document.createElement('li');
+                li.textContent = `${file.name}`;
+                li.dataset.src = file.url;
+
+                // 再生中の曲は"playing"クラスを付けて視覚的に区別
+                if (index === 0 && isPlaying) {
+                    li.classList.add('playing');
+                }
+
+                // 削除ボタンを追加
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = '×';
+                removeBtn.classList.add('remove-btn');
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // リスト項目クリックイベントを止める
+                    removeFromPlaylist(file.url);
+                });
+
+                li.appendChild(removeBtn);
+                playlist.appendChild(li);
+            });
         }
 
-        function setupAudio(fileURL) {
-            audio = new Audio(fileURL);
+        // 再生リストから曲を削除
+        function removeFromPlaylist(url) {
+            playlistArray = playlistArray.filter(file => file.url !== url);
+            updatePlaylist();
+        }
+
+        // 音楽再生を管理する関数
+        function setupAudio() {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const source = audioContext.createMediaElementSource(audio);
 
@@ -144,99 +272,133 @@
             source.connect(analyser);
             analyser.connect(audioContext.destination);
 
-            drawSpectrum();
+            // 音楽の再生時間が変わるたびに進捗を更新
+            audio.ontimeupdate = () => {
+                updateProgress();
+                updateTimeDisplay();
+            };
 
-            audio.addEventListener('timeupdate', updateProgress);
-            audio.addEventListener('loadedmetadata', () => {
-                durationDisplay.textContent = formatTime(audio.duration);
-            });
-
-            playBtn.addEventListener('click', () => {
-                audioContext.resume();
-                audio.play();
-                playBtn.disabled = true;
-                pauseBtn.disabled = false;
-            });
-
-            pauseBtn.addEventListener('click', () => {
-                audio.pause();
-                playBtn.disabled = false;
-                pauseBtn.disabled = true;
-            });
-
-            stopBtn.addEventListener('click', () => {
-                audio.pause();
-                audio.currentTime = 0;
-                playBtn.disabled = false;
-                pauseBtn.disabled = true;
-                progressBar.value = 0;
-                currentTimeDisplay.textContent = '00:00';
-            });
-
-            progressBar.addEventListener('input', () => {
-                audio.currentTime = (progressBar.value / 100) * audio.duration;
-            });
-
-            volumeBar.addEventListener('input', () => {
-                audio.volume = volumeBar.value;
-                updateVolumeIcon();
-            });
+            // 音楽の再生が終了したら次の曲に進む
+            audio.onended = () => {
+                nextSong();
+            };
         }
 
+        // 音楽再生の進捗を更新する
         function updateProgress() {
-            progressBar.value = (audio.currentTime / audio.duration) * 100;
-            currentTimeDisplay.textContent = formatTime(audio.currentTime);
-        }
-
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-
-        function updateVolumeIcon() {
-            const volume = volumeBar.value;
-            if (volume == 0) {
-                volumeIcon.src = 'images/volume-mute.PNG';
-            } else if (volume <= 0.3) {
-                volumeIcon.src = 'images/volume-low.PNG';
-            } else if (volume <= 0.7) {
-                volumeIcon.src = 'images/volume-medium.PNG';
-            } else {
-                volumeIcon.src = 'images/volume-high.PNG';
+            if (audio.duration) {
+                const progress = (audio.currentTime / audio.duration) * 100;
+                progressBar.value = progress;
             }
         }
 
-        function drawSpectrum() {
-            requestAnimationFrame(drawSpectrum);
+        // 再生時間の表示を更新する
+        function updateTimeDisplay() {
+            const currentMinutes = Math.floor(audio.currentTime / 60);
+            const currentSeconds = Math.floor(audio.currentTime % 60);
+            currentTimeDisplay.textContent = `${pad(currentMinutes)}:${pad(currentSeconds)}`;
 
+            const durationMinutes = Math.floor(audio.duration / 60);
+            const durationSeconds = Math.floor(audio.duration % 60);
+            durationDisplay.textContent = `${pad(durationMinutes)}:${pad(durationSeconds)}`;
+        }
+
+        // 時間の表示を2桁に揃える
+        function pad(number) {
+            return number < 10 ? '0' + number : number;
+        }
+
+        // 音楽の再生・一時停止
+        playBtn.addEventListener('click', () => {
+            if (!audio.src) {
+                const firstSong = playlistArray[0];
+                audio.src = firstSong.url;
+                fileNameDisplay.textContent = `再生中: ${firstSong.name}`;
+                setupAudio();
+                audio.play();
+                isPlaying = true;
+                playBtn.disabled = true;
+                pauseBtn.disabled = false;
+            } else {
+                audio.play();
+                isPlaying = true;
+                playBtn.disabled = true;
+                pauseBtn.disabled = false;
+            }
+        });
+
+        pauseBtn.addEventListener('click', () => {
+            audio.pause();
+            isPlaying = false;
+            playBtn.disabled = false;
+            pauseBtn.disabled = true;
+        });
+
+        stopBtn.addEventListener('click', () => {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            playBtn.disabled = false;
+            pauseBtn.disabled = true;
+        });
+
+        // 音量の変更
+        volumeBar.addEventListener('input', (event) => {
+            audio.volume = event.target.value;
+        });
+
+        // 音楽再生リスト内の曲をクリックして再生
+        playlist.addEventListener('click', (event) => {
+            if (event.target.tagName === 'LI') {
+                const songUrl = event.target.dataset.src;
+                audio.src = songUrl;
+                audio.play();
+                isPlaying = true;
+                fileNameDisplay.textContent = `再生中: ${event.target.textContent}`;
+                updatePlaylist();
+            }
+        });
+
+        // 次の曲へ
+        function nextSong() {
+            const currentIndex = playlistArray.findIndex(file => file.url === audio.src);
+            if (currentIndex < playlistArray.length - 1) {
+                audio.src = playlistArray[currentIndex + 1].url;
+                fileNameDisplay.textContent = `再生中: ${playlistArray[currentIndex + 1].name}`;
+                audio.play();
+                updatePlaylist();
+            }
+        }
+
+        // アナライザビジュアライゼーション
+        function renderVisualizer() {
+            requestAnimationFrame(renderVisualizer);
             analyser.getByteFrequencyData(dataArray);
 
             canvasCtx.fillStyle = '#f0f0f0';
             canvasCtx.fillRect(0, 0, analyzerCanvas.width, analyzerCanvas.height);
 
-            const barWidth = (analyzerCanvas.width / bufferLength) * 1.5;
-            let barHeight, x = 0;
+            const barWidth = (analyzerCanvas.width / bufferLength) * 2.5;
+            let barHeight;
+            let x = 0;
 
             for (let i = 0; i < bufferLength; i++) {
                 barHeight = dataArray[i];
 
-                // 青から空色へのグラデーション
-                const gradientFactor = i / bufferLength; // 棒の位置に応じた割合
-                const red = 0; // 赤はゼロ
-                const green = Math.floor(255 * gradientFactor); // 緑を割合で計算
-                const blue = 255; // 青を固定
-                canvasCtx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
-
+                canvasCtx.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)';
                 canvasCtx.fillRect(x, analyzerCanvas.height - barHeight / 2, barWidth, barHeight / 2);
-
                 x += barWidth + 1;
             }
         }
 
-        backBtn.addEventListener('click', () => {
-            window.location.href = 'index.html';
-        });
+        // 音楽ビジュアライゼーションを開始
+        renderVisualizer();
+
+        // 初期設定
+        window.onload = () => {
+            updatePlaylist();
+        };
+
     </script>
 </body>
 </html>
