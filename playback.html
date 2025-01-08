@@ -221,7 +221,13 @@
             for (let i = 0; i < bufferLength; i++) {
                 barHeight = dataArray[i];
 
-                canvasCtx.fillStyle = `rgb(${barHeight + 100},50,50)`;
+                // 青から空色へのグラデーション
+                const gradientFactor = i / bufferLength; // 棒の位置に応じた割合
+                const red = 0; // 赤はゼロ
+                const green = Math.floor(255 * gradientFactor); // 緑を割合で計算
+                const blue = 255; // 青を固定
+                canvasCtx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
+
                 canvasCtx.fillRect(x, analyzerCanvas.height - barHeight / 2, barWidth, barHeight / 2);
 
                 x += barWidth + 1;
