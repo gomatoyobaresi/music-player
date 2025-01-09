@@ -50,17 +50,14 @@ body {
     margin: 0;
 }
 
+
 #playlist li {
-    
-    
-    
-    
     display: flex;
     padding: 5px 10px;
     margin: 5px 0;
     background-color: #fff;
-border: 1px solid #ccc;
-margin-bottom: 5px;
+    border: 1px solid #ccc;
+    margin-bottom: 5px;
     border-radius: 5px;
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -68,6 +65,7 @@ margin-bottom: 5px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    cursor: grab;
 }
 
 
@@ -171,4 +169,22 @@ input[type="range"] {
 
 #fileInput {
     margin-left: 10px;
+}
+
+
+.drag-handle {
+    cursor: grab;
+    margin-right: 10px;
+    width: 24px;
+    height: 24px;
+}
+
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+
+button {
+    cursor: pointer;
 }
